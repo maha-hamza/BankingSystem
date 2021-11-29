@@ -17,10 +17,12 @@ data class TransferHistory(
     @Column(name = "initiated_at")
     val initiatedAt: LocalDate,
     @Column(name = "finished_at")
-    val finishedAt: LocalDate,
+    val finishedAt: LocalDate? = null,
     val amount: BigDecimal,
     val status: String,
     @Column(name = "transaction_type")
     val transactionType: String,
+    @Column(name = "transaction_code")
+    val transactionCode: String,
     val comment: String? = null
 )

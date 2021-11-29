@@ -6,6 +6,7 @@ import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
 import com.dkb.bankingsystem.repositories.PendingTransactionsRepository
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
+import com.dkb.bankingsystem.service.generateTransactionCode
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -43,6 +44,7 @@ class PendingDepositsCronJob(
                         amount = transaction.amount,
                         status = TransferStatus.ACCEPTED.name,
                         transactionType = TransactionType.DEPOSIT.name,
+                        transactionCode = generateTransactionCode()
                     )
                     accountRepository.save(updatedAccount);
                     historyRepository.save(transferHistory)

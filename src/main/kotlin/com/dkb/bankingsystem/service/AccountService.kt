@@ -146,6 +146,7 @@ class AccountService(
                         amount = amount,
                         status = TransferStatus.ACCEPTED.name,
                         transactionType = TransactionType.DEPOSIT.name,
+                        transactionCode = generateTransactionCode()
                     )
                     val currentUpdatedAccount = repository.save(updatedAccount);
                     historyRepository.save(transferHistory)

@@ -21,18 +21,6 @@ CREATE TABLE IF NOT EXISTS banking.pending_transactions (
     amount        DECIMAL(20,2)  NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS banking.transfers
-(
-   id                VARCHAR(50)     PRIMARY KEY AUTO_INCREMENT NOT NULL,
-   from_account      VARCHAR(50)                  NOT NULL,
-   to_account        VARCHAR(50)                  NOT NULL,
-   initiated_at      TIMESTAMP                    Not NULL,
-   amount            DECIMAL(20,2),
-   status            VARCHAR(10),
-   transaction_type  VARCHAR(255),
-   comment           VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS banking.transfers_history
 (
    id                VARCHAR(50)     PRIMARY KEY AUTO_INCREMENT NOT NULL,
@@ -43,5 +31,6 @@ CREATE TABLE IF NOT EXISTS banking.transfers_history
    amount            DECIMAL(20,2),
    status            VARCHAR(10),
    transaction_type  VARCHAR(255),
+   transaction_code  VARCHAR(50),
    comment           VARCHAR(255)
 );
