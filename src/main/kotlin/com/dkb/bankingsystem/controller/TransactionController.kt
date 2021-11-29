@@ -35,12 +35,14 @@ class TransactionController(
             sender = requestBody.senderIban,
             receiver = requestBody.receiverIban,
             amount = requestBody.amount
-        ).get()
-        if (result.comment == null)
-            responseBody.data = result
-        else {
-            responseBody.hasException = true
-            responseBody.exceptionMessage = result.comment
+        )
+        when {
+            result == null -> responseBody.data = "Current Transfer Process Is Pending Due to Processing on one of the accounts"
+            result.comment == null -> responseBody.data = result
+            else -> {
+                responseBody.hasException = true
+                responseBody.exceptionMessage = result.comment
+            }
         }
 
         return responseBody

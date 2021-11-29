@@ -4,7 +4,7 @@ import com.dkb.bankingsystem.model.TransferHistory
 import com.dkb.bankingsystem.model.enum.TransactionType
 import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
-import com.dkb.bankingsystem.repositories.PendingTransactionsRepository
+import com.dkb.bankingsystem.repositories.PendingDepositsRepository
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
 import com.dkb.bankingsystem.service.generateTransactionCode
 import org.springframework.scheduling.annotation.Scheduled
@@ -16,16 +16,16 @@ import java.time.LocalDate
 class PendingDepositsCronJob(
     val accountRepository: AccountRepository,
     val historyRepository: TransactionHistoryRepository,
-    val pendingTransactionsRepository: PendingTransactionsRepository
+    val pendingDepositsRepository: PendingDepositsRepository
 ) {
 
     @Scheduled(fixedRate = 5000)
-    fun replayPendingTransactions() {
-        val pendingTransaction = pendingTransactionsRepository.findAll()
-        pendingTransaction.forEach { transaction ->
+    fun replayPendingDeposits() {
+        val pendingDeposits = pendingDepositsRepository.findAll()
+        pendingDeposits.forEach { deposit ->
             run {
 
-                val account = accountRepository.findByIbanIgnoreCase(transaction.iban)
+                val account = accountRepository.findByIbanIgnoreCase(deposit.iban)
                 if (!account!!.transactionPending) {
                     val blockingCopy = account.copy(
                         transactionPending = true,
@@ -33,22 +33,22 @@ class PendingDepositsCronJob(
                     )
                     val latestAccountData = accountRepository.save(blockingCopy)
                     val updatedAccount = latestAccountData.copy(
-                        balance = latestAccountData.balance.plus(transaction.amount),
+                        balance = latestAccountData.balance.plus(deposit.amount),
                         lastModified = LocalDate.now(),
                         transactionPending = false
                     )
                     val transferHistory = TransferHistory(
-                        toAccount = transaction.iban,
+                        toAccount = deposit.iban,
                         initiatedAt = LocalDate.now(),
                         finishedAt = updatedAccount.lastModified!!,
-                        amount = transaction.amount,
+                        amount = deposit.amount,
                         status = TransferStatus.ACCEPTED.name,
                         transactionType = TransactionType.DEPOSIT.name,
                         transactionCode = generateTransactionCode()
                     )
                     accountRepository.save(updatedAccount);
                     historyRepository.save(transferHistory)
-                    pendingTransactionsRepository.delete(transaction)
+                    pendingDepositsRepository.delete(deposit)
                 }
             }
         }

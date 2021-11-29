@@ -15,10 +15,17 @@ CREATE TABLE IF NOT EXISTS banking.accounts (
     UNIQUE KEY acct_number_UNIQUE (account_number)
 );
 
-CREATE TABLE IF NOT EXISTS banking.pending_transactions (
+CREATE TABLE IF NOT EXISTS banking.pending_deposits (
     id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
     iban           VARCHAR(50)   NOT NULL,
     amount        DECIMAL(20,2)  NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS banking.pending_transactions (
+    id             int           NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    sender         VARCHAR(50)   NOT NULL,
+    receiver       VARCHAR(50)   NOT NULL,
+    amount         DECIMAL(20,2)  NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS banking.transfers_history

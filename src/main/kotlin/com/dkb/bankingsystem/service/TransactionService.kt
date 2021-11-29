@@ -2,11 +2,13 @@ package com.dkb.bankingsystem.service
 
 import com.dkb.bankingsystem.exceptions.*
 import com.dkb.bankingsystem.model.Account
+import com.dkb.bankingsystem.model.PendingTransaction
 import com.dkb.bankingsystem.model.TransferHistory
 import com.dkb.bankingsystem.model.enum.AccountType
 import com.dkb.bankingsystem.model.enum.TransactionType
 import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
+import com.dkb.bankingsystem.repositories.PendingTransactionsRepository
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -16,15 +18,15 @@ import java.util.*
 @Service
 class TransactionService(
     val accountRepository: AccountRepository,
-    val transactionHistoryRepository: TransactionHistoryRepository
+    val transactionHistoryRepository: TransactionHistoryRepository,
+    val pendingTransactionsRepository: PendingTransactionsRepository
 ) {
-
 
     fun makeTransfer(
         sender: String,
         receiver: String,
         amount: BigDecimal
-    ): Optional<TransferHistory> {
+    ): TransferHistory? {
 
         val initialTransaction = transactionHistoryRepository.save(
             TransferHistory(
@@ -50,17 +52,29 @@ class TransactionService(
         } catch (e: Exception) {
             prepareFailingTransferHistoryLog(initialTransaction, e)
         }
+
+        if (senderAccount?.transactionPending!! || receiverAccount?.transactionPending!!) {
+            pendingTransactionsRepository.save(
+                PendingTransaction(
+                    sender = sender,
+                    receiver = receiver,
+                    amount = amount
+                )
+            )
+            return null
+        }
         val transaction = transactionHistoryRepository.findById(initialTransaction.id)
+
         if (transaction.get().status == TransferStatus.INITIATED.name) {
             // block any future transaction for now
             val latestSenderAccount = accountRepository.save(
-                senderAccount!!.copy(
+                senderAccount.copy(
                     transactionPending = true,
                     lastModified = LocalDate.now()
                 )
             )
             val latestReceiverAccount = accountRepository.save(
-                receiverAccount!!.copy(
+                receiverAccount.copy(
                     transactionPending = true,
                     lastModified = LocalDate.now()
                 )
@@ -81,9 +95,9 @@ class TransactionService(
             accountRepository.save(receiverCopyForTransfer)
 
             prepareSuccessfulTransferHistoryLog(initialTransaction)
-        }
 
-        return transactionHistoryRepository.findById(initialTransaction.id)
+        }
+        return transactionHistoryRepository.findById(initialTransaction.id).get()
     }
 
     private fun validateSenderAndReceiverAccounts(

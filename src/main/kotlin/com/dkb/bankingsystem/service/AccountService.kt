@@ -2,13 +2,13 @@ package com.dkb.bankingsystem.service
 
 import com.dkb.bankingsystem.exceptions.*
 import com.dkb.bankingsystem.model.Account
-import com.dkb.bankingsystem.model.PendingTransaction
+import com.dkb.bankingsystem.model.PendingDeposit
 import com.dkb.bankingsystem.model.TransferHistory
 import com.dkb.bankingsystem.model.enum.AccountType
 import com.dkb.bankingsystem.model.enum.TransactionType
 import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
-import com.dkb.bankingsystem.repositories.PendingTransactionsRepository
+import com.dkb.bankingsystem.repositories.PendingDepositsRepository
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
@@ -20,7 +20,7 @@ import kotlin.random.Random
 class AccountService(
     val repository: AccountRepository,
     val historyRepository: TransactionHistoryRepository,
-    val pendingTransactionsRepository: PendingTransactionsRepository
+    val pendingTransactionsRepository: PendingDepositsRepository
 ) {
 
     fun filterAccountsByAccountType(
@@ -156,7 +156,7 @@ class AccountService(
                     )
                 } else {
                     pendingTransactionsRepository.save(
-                        PendingTransaction(
+                        PendingDeposit(
                             iban = iban,
                             amount = amount
                         )
