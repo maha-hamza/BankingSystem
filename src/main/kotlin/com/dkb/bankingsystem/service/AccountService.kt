@@ -10,6 +10,7 @@ import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
 import com.dkb.bankingsystem.repositories.PendingDepositsRepository
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
+import com.dkb.bankingsystem.service.dto.DepositDTO
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDate
@@ -37,6 +38,9 @@ class AccountService(
         customerId: String,
         accountType: AccountType
     ): Account {
+        if (customerId.isBlank()) {
+            throw CustomerCannotOpenAccountException("CustomerId Can't be Blank")
+        }
         val checkedAccount =
             repository.findByCustomerIdAndAccountType(customerId = customerId, accountType = accountType.name)
         return when (checkedAccount == null) {
@@ -62,7 +66,7 @@ class AccountService(
         }
     }
 
-    fun generateAccountNumber(): String {
+    private fun generateAccountNumber(): String {
         var isUniqueAccountNumber = false
         var accountNumber: String
         do {
@@ -74,12 +78,15 @@ class AccountService(
         return accountNumber
     }
 
-    fun lockAccount(iban: String) {
+    fun lockAccount(iban: String): Account {
+        if (iban.isBlank()) {
+            throw AccountLockException("IBAN is blank, Please make sure to enter valid IBAN")
+        }
         val account = repository.findByIbanIgnoreCase(iban = iban)
-        when {
+        return when {
             account == null -> throw AccountNotFoundException("Account You are trying to lock doesn't exists")
             account.locked -> throw AccountLockException("Account You are trying to lock already locked, Do you mean unlock?")
-            !account.locked -> {
+            else -> {
                 val updatedAccount = account.copy(
                     locked = true,
                     lastModified = LocalDate.now()
@@ -89,12 +96,16 @@ class AccountService(
         }
     }
 
-    fun unlockAccount(iban: String) {
+    fun unlockAccount(iban: String): Account {
+        if (iban.isBlank()) {
+            throw AccountLockException("IBAN is blank, Please make sure to enter valid IBAN")
+        }
+
         val account = repository.findByIbanIgnoreCase(iban = iban)
-        when {
-            account == null -> throw AccountNotFoundException("Account You are trying to lock doesn't exists")
+        return when {
+            account == null -> throw AccountNotFoundException("Account You are trying to unlock doesn't exists")
             !account.locked -> throw AccountLockException("Account You are trying to unlock is not locked, Do you mean lock?")
-            account.locked -> {
+            else -> {
                 val updatedAccount = account.copy(
                     locked = false,
                     lastModified = LocalDate.now()
@@ -104,7 +115,7 @@ class AccountService(
         }
     }
 
-    fun getAccountBalanceByIbanOrAccountNumber(accountNumber: String?, iban: String?): BigDecimal {
+    fun getAccountBalanceByIbanOrAccountNumber(accountNumber: String? = null, iban: String? = null): BigDecimal {
         return when {
             accountNumber != null -> repository.findByAccountNumber(accountNumber)?.balance
                 ?: throw AccountNotFoundException(String.format("No account with #%s exists", accountNumber))
@@ -116,7 +127,7 @@ class AccountService(
 
 
     @Transactional
-    fun deposit(iban: String, amount: BigDecimal): String {
+    fun deposit(iban: String, amount: BigDecimal): DepositDTO {
         val initiatedAt = LocalDate.now()
         if (amount <= BigDecimal.ZERO)
             throw EmptyDepositException(String.format("Can't Perform Empty or negative Deposit, Please make sure that correct amount is selected"))
@@ -149,10 +160,13 @@ class AccountService(
                         transactionCode = generateTransactionCode()
                     )
                     val currentUpdatedAccount = repository.save(updatedAccount);
-                    historyRepository.save(transferHistory)
-                    return String.format(
-                        "Amount Is Successfully Deposited, Current Amount [%f]",
-                        currentUpdatedAccount.balance
+                    val history = historyRepository.save(transferHistory)
+                    return DepositDTO(
+                        message = String.format(
+                            "Amount Is Successfully Deposited, Current Amount [%f]",
+                            currentUpdatedAccount.balance
+                        ),
+                        transferReport = history
                     )
                 } else {
                     pendingTransactionsRepository.save(
@@ -161,7 +175,9 @@ class AccountService(
                             amount = amount
                         )
                     )
-                    return "Current Deposit Process Is Pending Due to Processing on the account"
+                    return DepositDTO(
+                        message = "Current Deposit Process Is Pending Due to Processing on the account"
+                    )
                 }
             }
         }

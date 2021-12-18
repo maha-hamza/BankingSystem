@@ -8,5 +8,6 @@ interface TransactionHistoryRepository : JpaRepository<TransferHistory, Int> {
 
     fun findByFromAccount(fromAccount: String): List<TransferHistory>
 
+    fun findByToAccount(toAccount: String): List<TransferHistory>
 
 }

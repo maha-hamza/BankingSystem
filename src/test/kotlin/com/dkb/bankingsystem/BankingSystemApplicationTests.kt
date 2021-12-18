@@ -11,10 +11,6 @@ import kotlin.random.Random
 class BankingSystemApplicationTests {
 
     @Test
-    fun contextLoads() {
-        println(
-            String.valueOf(Random.nextInt(999999999)).plus(Random.nextInt(999999))
-        )
-    }
+    fun contextLoads() {}
 
 }
