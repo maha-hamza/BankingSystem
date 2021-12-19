@@ -16,8 +16,8 @@ class AccountController(
     fun lockAccount(@RequestBody requestBody: IbanRequestRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
-            accountService.lockAccount(requestBody.iban)
-            responseBody.data = "Account_Locked"
+            val result = accountService.lockAccount(requestBody.iban)
+            responseBody.data = result
         } catch (e: Exception) {
             prepareErrorResponseBody(e, responseBody)
         }
@@ -28,8 +28,8 @@ class AccountController(
     fun unlockAccount(@RequestBody requestBody: IbanRequestRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
-            accountService.unlockAccount(requestBody.iban)
-            responseBody.data = "Account_Unlocked"
+            val result = accountService.unlockAccount(requestBody.iban)
+            responseBody.data = result
         } catch (e: Exception) {
             prepareErrorResponseBody(e, responseBody)
         }
