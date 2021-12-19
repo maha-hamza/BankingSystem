@@ -7,11 +7,11 @@ import com.dkb.bankingsystem.model.enum.TransactionType
 import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.AccountRepository
 import com.dkb.bankingsystem.repositories.PendingDepositsRepository
-import com.dkb.bankingsystem.repositories.PendingTransactionsRepository
-import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
 import org.assertj.core.api.AssertionsForInterfaceTypes.assertThat
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.math.BigDecimal

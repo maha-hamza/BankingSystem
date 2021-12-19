@@ -18,4 +18,7 @@ class InsufficientBalanceException(msg: String?) : RuntimeException(msg)
 
 class AccountTransferException(msg: String?) : RuntimeException(msg)
 
+class EmptyTransferAmountException(msg: String?) : RuntimeException(msg)
+
+
 

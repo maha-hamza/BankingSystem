@@ -51,6 +51,7 @@ class TransactionService(
             )
         } catch (e: Exception) {
             prepareFailingTransferHistoryLog(initialTransaction, e)
+            throw e
         }
 
         if (senderAccount?.transactionPending!! || receiverAccount?.transactionPending!!) {
@@ -116,10 +117,10 @@ class TransactionService(
         when {
             account == null -> throw AccountNotFoundException("Sender Account doesn't exists")
             account.locked -> throw AccountLockException("Sender Account is Locked, Can't Make a transfer from locked accounts")
-            account.dateClosed?.isBefore(LocalDate.now()) == true -> throw ClosedAccountException("Sender Account is Closed, Can't Make a transfer from locked accounts")
+            account.dateClosed?.isBefore(LocalDate.now()) == true -> throw ClosedAccountException("Sender Account is Closed, Can't Make a transfer from Closed accounts")
             account.balance < amount -> throw InsufficientBalanceException("Sender Account has Insufficient Balance")
             account.accountType == AccountType.PRIVATE_LOAN_ACCOUNT.name -> throw AccountTransferException("Sender Account is PRIVATE_LOAN_ACCOUNT, Can't transfer from Private Loan Account")
-            amount <= BigDecimal.ZERO -> throw EmptyDepositException("Can't Transfer Negative/Zero amount")
+            amount <= BigDecimal.ZERO -> throw EmptyTransferAmountException("Can't Transfer Negative/Zero amount")
         }
     }
 
@@ -127,11 +128,11 @@ class TransactionService(
         when {
             account == null -> throw AccountNotFoundException("Receiver Account doesn't exists")
             account.locked -> throw AccountLockException("Receiver Account is Locked, Can't Make a transfer from locked accounts")
-            account.dateClosed?.isBefore(LocalDate.now()) == true -> throw ClosedAccountException("Receiver Account is Closed, Can't Make a transfer from locked accounts")
+            account.dateClosed?.isBefore(LocalDate.now()) == true -> throw ClosedAccountException("Receiver Account is Closed, Can't Make a transfer from Closed accounts")
         }
     }
 
-    fun prepareFailingTransferHistoryLog(transfer: TransferHistory, e: Exception) {
+    private fun prepareFailingTransferHistoryLog(transfer: TransferHistory, e: Exception) {
         transactionHistoryRepository.save(
             transfer.copy(
                 finishedAt = LocalDate.now(),
@@ -141,7 +142,7 @@ class TransactionService(
         )
     }
 
-    fun prepareSuccessfulTransferHistoryLog(transfer: TransferHistory) {
+    private fun prepareSuccessfulTransferHistoryLog(transfer: TransferHistory) {
         transactionHistoryRepository.save(
             transfer.copy(
                 finishedAt = LocalDate.now(),

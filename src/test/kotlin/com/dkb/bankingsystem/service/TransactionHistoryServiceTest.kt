@@ -5,6 +5,7 @@ import com.dkb.bankingsystem.model.enum.TransactionType
 import com.dkb.bankingsystem.model.enum.TransferStatus
 import com.dkb.bankingsystem.repositories.TransactionHistoryRepository
 import org.assertj.core.api.Assertions
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,6 +21,11 @@ class TransactionHistoryServiceTest(
     @Autowired
     val repository: TransactionHistoryRepository
 ) {
+
+    @AfterEach
+    fun clean() {
+        repository.deleteAll()
+    }
 
     @Test
     fun shouldReturnEmptyListIfNoHistoryFoundOrIBANDoesntExists() {
@@ -64,7 +70,7 @@ class TransactionHistoryServiceTest(
             )
         )
         val result = service.getAllTransactionsHistoryForAccount("BE XX 123456789101 0 00")
-        Assertions.assertThat(result.map { it.id }).isEqualTo(listOf(1, 2))
+        Assertions.assertThat(result).hasSize(2)
     }
 
 }
