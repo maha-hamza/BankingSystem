@@ -8,11 +8,12 @@ import org.springframework.web.bind.annotation.*
 import java.lang.Exception
 
 @RestController
+@RequestMapping("/account")
 class AccountController(
     val accountService: AccountService
 ) {
 
-    @PatchMapping("/account/lock")
+    @PatchMapping("/lock")
     fun lockAccount(@RequestBody requestBody: IbanRequestRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
@@ -24,7 +25,7 @@ class AccountController(
         return responseBody
     }
 
-    @PatchMapping("/account/unlock")
+    @PatchMapping("/unlock")
     fun unlockAccount(@RequestBody requestBody: IbanRequestRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
@@ -36,7 +37,7 @@ class AccountController(
         return responseBody
     }
 
-    @PostMapping("/account/create")
+    @PostMapping("/create")
     fun createAccount(@RequestBody requestBody: AccountCreationRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
@@ -49,7 +50,7 @@ class AccountController(
         return responseBody
     }
 
-    @PostMapping("/account/accountType/filter")
+    @GetMapping("/accountType/filter")
     fun filterAccountsByAccountType(@RequestBody requestBody: AccountRequestByAccountTypeRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
@@ -62,7 +63,7 @@ class AccountController(
         return responseBody
     }
 
-    @PostMapping("/account/balance")
+    @GetMapping("/balance")
     fun getAccountBalance(@RequestBody requestBody: AccountBalanceRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
@@ -79,7 +80,7 @@ class AccountController(
         return responseBody
     }
 
-    @PostMapping("/account/deposit")
+    @PostMapping("/deposit")
     fun deposit(@RequestBody requestBody: AccountDepositRequestBody): ResponseBody {
         val responseBody = ResponseBody()
         try {
